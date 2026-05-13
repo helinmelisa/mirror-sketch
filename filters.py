@@ -76,3 +76,28 @@ def apply_paper_texture(sketch: np.ndarray, strength: float = 0.15) -> np.ndarra
     noise = np.random.normal(0, 255 * strength, sketch.shape).astype(np.float32)
     textured = np.clip(sketch.astype(np.float32) + noise, 0, 255).astype(np.uint8)
     return textured
+
+
+def apply_flicker(sketch: np.ndarray, intensity: float = 1.5) -> np.ndarray:
+    """Tiny random affine warp each frame — simulates hand-drawn jitter."""
+    h, w = sketch.shape[:2]
+    angle = np.random.uniform(-0.4, 0.4) * intensity
+    tx = np.random.uniform(-1.0, 1.0) * intensity
+    ty = np.random.uniform(-1.0, 1.0) * intensity
+    M = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1.0)
+    M[0, 2] += tx
+    M[1, 2] += ty
+    border = (255, 255, 255) if sketch.ndim == 2 else (255, 255, 255)
+    return cv2.warpAffine(sketch, M, (w, h), borderValue=border)
+
+
+def color_sketch(frame_bgr: np.ndarray, sketch_gray: np.ndarray,
+                 saturation_boost: float = 1.6) -> np.ndarray:
+    """Blend sketch strokes with original color — hue preserved, sketch as luminance."""
+    hsv = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2HSV).astype(np.float32)
+    hsv[:, :, 1] = np.clip(hsv[:, :, 1] * saturation_boost, 0, 255)
+    # Sketch (white bg, dark strokes) → darker value where strokes are
+    hsv[:, :, 2] = np.clip(
+        hsv[:, :, 2] * (sketch_gray.astype(np.float32) / 255.0), 0, 255
+    )
+    return cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)

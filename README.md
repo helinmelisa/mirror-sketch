@@ -2,7 +2,7 @@
 
 Real-time pencil sketch mirror using your webcam. See yourself as a live drawing.
 
-## Filters
+## Sketch Modes
 
 | Key | Mode |
 |-----|------|
@@ -10,12 +10,20 @@ Real-time pencil sketch mirror using your webcam. See yourself as a live drawing
 | `2` | XDoG — artistic ink sketch |
 | `3` | Canny — hard edge / graphic style |
 | `4` | Hatching — directional line overlay |
+| `5` | ETF — coherent strokes via Edge Tangent Flow + FDoG |
 
-| Key | Action |
+## Effects
+
+| Key | Effect |
 |-----|--------|
-| `T` | Toggle paper texture |
-| `M` | Toggle mirror flip |
+| `T` | Paper texture noise |
+| `F` | Stroke flicker — hand-drawn jitter via random affine warp |
+| `R` | Motion trails — optical flow leaves fading sketch echoes |
+| `C` | Color sketch — preserves original hue, sketch drives luminance |
+| `M` | Mirror flip |
 | `Q` / ESC | Quit |
+
+Effects stack — try ETF + Color + Trails + Flicker together.
 
 ## Setup
 
