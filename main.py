@@ -1,13 +1,14 @@
 import cv2
 import numpy as np
-from filters import dodge_blend, xdog, canny_sketch, hatching, apply_paper_texture
+from filters import dodge_blend, xdog, canny_sketch, hatching, etf_sketch, apply_paper_texture
 
-MODES = ["dodge", "xdog", "canny", "hatching"]
+MODES = ["dodge", "xdog", "canny", "hatching", "etf"]
 MODE_LABELS = {
     "dodge":    "Pencil Sketch (Dodge)",
     "xdog":     "XDoG (Artistic)",
     "canny":    "Canny Stylized",
     "hatching": "Hatching",
+    "etf":      "ETF Coherent Strokes",
 }
 
 KEYS = {
@@ -15,6 +16,7 @@ KEYS = {
     ord("2"): "xdog",
     ord("3"): "canny",
     ord("4"): "hatching",
+    ord("5"): "etf",
     ord("t"): "toggle_texture",
     ord("m"): "mirror",
     ord("q"): "quit",
@@ -44,6 +46,8 @@ def process(gray: np.ndarray, mode: str, texture: bool) -> np.ndarray:
         out = canny_sketch(gray)
     elif mode == "hatching":
         out = hatching(gray)
+    elif mode == "etf":
+        out = etf_sketch(gray)
     else:
         out = gray
 

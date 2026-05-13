@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from etf import compute_tangent_field, lic, fdog
 
 
 def dodge_blend(gray: np.ndarray, blur_radius: int = 21) -> np.ndarray:
@@ -45,6 +46,30 @@ def hatching(gray: np.ndarray, angle_deg: float = 45.0,
     mask = (gray < 128).astype(np.uint8) * 255
     result = np.where(mask > 0, canvas, 255).astype(np.uint8)
     return result
+
+
+def etf_sketch(gray: np.ndarray, lic_steps: int = 12, fdog_steps: int = 8,
+               scale: float = 0.5) -> np.ndarray:
+    """Coherent stroke sketch via ETF tangent field + FDoG edges."""
+    h, w = gray.shape
+    sh, sw = int(h * scale), int(w * scale)
+
+    small = cv2.resize(gray, (sw, sh), interpolation=cv2.INTER_AREA)
+    tx, ty, mag = compute_tangent_field(small)
+
+    # LIC on noise — fibrous texture aligned with edges
+    noise = np.random.randint(0, 256, (sh, sw), dtype=np.uint8)
+    strokes = lic(noise, tx, ty, steps=lic_steps)
+
+    # FDoG edges along the flow
+    edges = fdog(small, tx, ty, steps=fdog_steps)
+
+    # Multiply: strokes darken where edges are strong
+    mag_up = cv2.resize(mag.astype(np.float32), (sw, sh))
+    combined = (strokes.astype(np.float32) * (edges.astype(np.float32) / 255.0))
+    combined = np.clip(combined, 0, 255).astype(np.uint8)
+
+    return cv2.resize(combined, (w, h), interpolation=cv2.INTER_LINEAR)
 
 
 def apply_paper_texture(sketch: np.ndarray, strength: float = 0.15) -> np.ndarray:
